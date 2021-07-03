@@ -3,36 +3,12 @@
     <head>
         <%- include('../partials/head'); %>
     </head>
-    <body class="container">
-        <header>
-            <%- include('../partials/header', {variant:'compact'}); %>
-        </header>
-        <main>
-            <!--
-            <div class="jumbotron">
-                <h2>Cute mascots</h2>
-                <p><%= tagline %></p>
-                <ul>
-                    <% mascots.forEach(function(mascot) { %>
-                        <li>
-                            <strong><%= mascot.name %></strong>
-                            representing <%= mascot.organization %>, born <%= mascot.birth_year %>
-                        </li>
-                    <% }); %>
-                </ul>
-            </div>
-            -->
+    <header>
+        <%- include('../partials/header'); %>
+    </header>
+    <body class="container-fluid h-75">
             <div class="jumbotron map" id="map">
                 
-            </div>
-            
-            <div class="jumbotron">
-                <p id="DevID">
-                    e
-                </p>
-                <p id="name">
-                    e
-                </p>
             </div>
         </main>
         <footer>
@@ -47,20 +23,19 @@ var bottomLeft = [0, 0];
 var topRight = [4096, 4096];
 var bounds = [bottomLeft, topRight];
 
+var popupid;
+
 var map = L.map('map', {
     crs: L.CRS.Simple,
-    minZoom: -1.75,
+    minZoom: -1.7,
     maxBounds: bounds,
     maxBoundsViscosity: 1.0
 });
 
-map.on('click', function (event) {
-  var coords = event.latlng;
-  L.popup()
-  .setLatLng(coords)
-  .setContent('[' + Math.floor(coords.lat) + ',' + Math.floor(coords.lng) + ']')
-  .openOn(map);
-}); 
+map.on('popupopen', function(e) { 
+    popupid = e.popup._source._myId;
+});
+
 
 var image = L.imageOverlay('https://img-cdn.fivemods.net/unsafe/filters:format(webp):quality(90):sharpen(1,0.3,true)/http://blog.damonpollard.com/wp-content/uploads/2013/09/GTAV_ATLUS_4096x4096.png', bounds).addTo(map);
 
@@ -79,9 +54,6 @@ socket.on('result', function(result) {
 
     const json = JSON.parse(result);
 
-    const DevID = document.getElementById('DevID');
-    DevID.innerHTML = JSON.stringify(json);
-
     function markerAdd() {
         for(i=0;i<json.length;i++) {
             var userid = json[i]['id'];
@@ -99,8 +71,24 @@ socket.on('result', function(result) {
             let usercoords = getPictureCoords(Xcoord, Ycoord);
 
             var LamMarker = new L.marker([usercoords[1], usercoords[0]]);
+            LamMarker._myId = userid;
+            LamMarker.addTo(map);
+            if (popupid == userid) {
+                LamMarker.bindPopup(`<p>Username: ${username} <br>
+                    ID: ${userid} <br>
+                    Heading: ${heading} <br>
+                    Vehicle: ${vehicle} <br>
+                    </p>`).openPopup();
+                
+            } else {
+                LamMarker.bindPopup(`<p>Username: ${username} <br>
+                    ID: ${userid} <br>
+                    Heading: ${heading} <br>
+                    Vehicle: ${vehicle} <br>
+                    </p>`);
+            }
+            
             marker.push(LamMarker);
-            map.addLayer(marker[i]);
 
         }
     }
@@ -116,8 +104,8 @@ socket.on('result', function(result) {
 
    
     function getPictureCoords(x, y) {
-        const ZeroX = 1903;
-        const ZeroY = 2690;
+        const ZeroX = 1876;
+        const ZeroY = 1331;
         const Scale = 3.037861303705727;
         var x = x/Scale;
         var y = y/Scale;

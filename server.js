@@ -105,7 +105,7 @@ server.listen(3000, () => {
   console.log('Live at port 3000');
 });
 
-onNet('SendInfo', (player, name, coords, heading, vehclass, model) => {
+onNet('SendInfo', (player, name, coords, heading, model, vehclass) => {
 
     if (model != "CARNOTFOUND") {
         var playerarray = {
