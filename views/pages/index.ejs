@@ -3,14 +3,17 @@
     <head>
         <%- include('../partials/head'); %>
     </head>
-    <body>
+    <header>
         <%- include('../partials/header'); %>
-        <main>
-        <div class="jumbotron map" id="map">
+    </header>
+    <body class="container-fluid h-75">
+            <div class="jumbotron map" id="map">
                 
             </div>
         </main>
-        <%- include('../partials/footer') %>
+        <footer>
+            <%- include('../partials/footer') %>
+        </footer>
     </body>
 </html>
 
@@ -55,11 +58,12 @@ socket.on('result', function(result) {
         for(i=0;i<json.length;i++) {
             var userid = json[i]['id'];
             var username = json[i]['name'];
-            var vehicle = json[i]['vehicle'];
+            var vehicle = json[i]['vehicle'] || "Just walking";
             var Xcoord = json[i]['coords'][0];
             var Ycoord = json[i]['coords'][1];
             var Zcoord = json[i]['coords'][2];
             var heading = json[i]['heading'];
+            var callsign = json[i]['callsing'] || "No callsign set";
             
             if (vehicle != 0) {
                 // do stuff
@@ -75,13 +79,18 @@ socket.on('result', function(result) {
                     ID: ${userid} <br>
                     Heading: ${heading} <br>
                     Vehicle: ${vehicle} <br>
-                    </p>`).openPopup();
+                    Callsign: ${callsign} <br>
+                    Altitude: ${Zcoord} <br>
+                    </p>`)
+                    .openPopup();
                 
             } else {
                 LamMarker.bindPopup(`<p>Username: ${username} <br>
                     ID: ${userid} <br>
                     Heading: ${heading} <br>
                     Vehicle: ${vehicle} <br>
+                    Callsign: ${callsign} <br>
+                    Altitude: ${Zcoord} <br>
                     </p>`);
             }
             
