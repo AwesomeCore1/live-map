@@ -27,7 +27,8 @@
         crs: L.CRS.Simple,
         minZoom: -1.7,
         maxBounds: bounds,
-        maxBoundsViscosity: 1.0
+        maxBoundsViscosity: 1.0,
+        zoomControl: false
     });
 
     map.on('popupopen', function (e) {
@@ -63,6 +64,7 @@
                 var Zcoord = json[i]['coords'][2];
                 var heading = json[i]['heading'];
                 var headingText;
+                var LamMarker;
                 
                 if (heading > 45 && heading <= 135) {
                     headingText = 'West';
@@ -77,12 +79,74 @@
                 if (vehicle != 0) {
                     // do stuff
                 }
+                
+                var personIcon = L.icon({
+                    iconUrl: 'https://docs.fivem.net/blips/radar_centre.png',
+                    iconSize: [27, 32],
+                    iconAnchor: [13.5, 16],
+                    popupAnchor: [-13.5, 0],
+                    className: "icon-turn poop" + heading
+                });
+
+                var planeIcon = L.icon({
+                    iconUrl: 'https://ext-cdn.fivemods.net/img/RaVnXuM0j4Kkbzvl.png',
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16],
+                    popupAnchor: [-16, 0],
+                    className: "icon-turn icon-turn-" + heading
+                });
+
+                var carIcon = L.icon({
+                    iconUrl: 'https://ext-cdn.fivemods.net/img/LhKwFqpIcNvblYDA.png',
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16],
+                    popupAnchor: [-16, 0],
+                    className: "icon-turn icon-turn-" + heading
+                });
+                
+                var boatIcon = L.icon({
+                    iconUrl: 'https://ext-cdn.fivemods.net/img/31j75MctQRrL6d9I.png',
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16],
+                    popupAnchor: [-16, 0],
+                    className: "icon-turn icon-turn-" + heading
+                });
+                
+                var helicopterIcon = L.icon({
+                    iconUrl: 'https://ext-cdn.fivemods.net/img/NYGTQRc6gWiukIJt.png',
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16],
+                    popupAnchor: [-16, 0],
+                    className: `icon-turn icon-helicopter`
+                });
 
                 let usercoords = getPictureCoords(Xcoord, Ycoord);
 
-                var LamMarker = new L.marker([usercoords[1], usercoords[0]]);
+                if (vehicle == "") {
+                    LamMarker = new L.marker(
+                        [usercoords[1], usercoords[0]], 
+                        {
+                            icon: planeIcon
+                        }
+                    );
+                } else if (vehicle == "") {
+                    LamMarker = new L.marker(
+                        [usercoords[1], usercoords[0]], 
+                        {
+                            icon: carIcon
+                        }
+                    );
+                } else {
+                    LamMarker = new L.marker(
+                        [usercoords[1], usercoords[0]], 
+                        {
+                            icon: personIcon
+                        }
+                    );
+                }
+               
                 LamMarker._myId = userid;
-                LamMarker.addTo(map);
+                LamMarker.addTo(map); 
                 if (popupid == userid) {
                     LamMarker.bindPopup(`
                     <div class="popup">
@@ -143,6 +207,9 @@
 
         markerAdd();
 
+        $('.leaflet-popup-close-button').click(function() {
+            popupid = 0;
+        });
 
         function getPictureCoords(x, y) {
             const ZeroX = 1876;
@@ -155,6 +222,11 @@
             return [Math.floor(trueX), Math.floor(trueY)];
         }
 
+        $('.leaflet-control-attribution').hide()
+
     });
+
+
+
 
 </script>
