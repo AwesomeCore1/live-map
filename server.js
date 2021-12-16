@@ -4,8 +4,10 @@ const http = require('http');
 const server = http.createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server);
+Delay = (ms) => new Promise(res => setTimeout(res, ms));
 
 var array = [];
+var result;
 
 var LocalStorage = require('node-localstorage').LocalStorage;
 localStorage = new LocalStorage('./scratch');
@@ -14,18 +16,14 @@ app.set('views', path.join(GetResourcePath(GetCurrentResourceName()), "views"));
 app.set('view engine', 'ejs');
 
 app.get('/', function(req, res) {
-    var mascots = [
-        { name: 'Sammy', organization: 'DigitalOcean', birth_year: 2012 },
-        { name: 'Tux', organization: 'Linux', birth_year: 1996 },
-        { name: 'Moby Duck', organization: 'Docker', birth_year: 2013 }
-    ];
-    var tagline = "No programming is complete without a cute animal mascot.";
 
-    // refresh_users();
+    refresh_users();
 
+    /*
     const players =  getPlayers();
     var playercount = players.length;
 
+    
     var playercounts = playercount;
 
     players.forEach(element => {
@@ -41,8 +39,9 @@ app.get('/', function(req, res) {
 
         const vehicle = GetVehiclePedIsIn(ped, false);
         const modelhash = GetEntityModel(vehicle);
+        const callsign = Player.state["callsign"];
 
-        emitNet("GetInfo", player, player, name, coords, heading, modelhash, vehicle);
+        emitNet("GetInfo", player, player, name, coords, heading, modelhash, vehicle, callsign);
 
         if (playercount == 0) {
 
@@ -67,12 +66,9 @@ app.get('/', function(req, res) {
         localStorage.setItem('SocketResult', result);
 
     }
-    
-
+    */
 
     res.render('pages/index', {
-        mascots: mascots,
-        tagline: tagline,
         result: result
     });
     
@@ -97,7 +93,7 @@ io.on('connection', (socket) => {
 });
 
 setInterval(function(){
-    refresh_users();    
+    refresh_users();
     io.emit('result', localStorage.getItem('SocketResult'));
 }, 1000);
 
@@ -105,7 +101,7 @@ server.listen(3000, () => {
   console.log('Live at port 3000');
 });
 
-onNet('SendInfo', (player, name, coords, heading, model, vehclass) => {
+onNet('SendInfo', (player, name, coords, heading, model, vehclass, callsign) => {
 
     if (model != "CARNOTFOUND") {
         var playerarray = {
@@ -116,7 +112,7 @@ onNet('SendInfo', (player, name, coords, heading, model, vehclass) => {
             "vehicle": model
         };
     } else {
-        var playerarray = {
+        var playerarray = { 
             "id": player,
             "name": name,
             "coords": coords,
@@ -141,19 +137,10 @@ function refresh_users() {
     const players =  getPlayers();
     var playercount = players.length;
 
+    
     var playercounts = playercount;
 
-    
-
-    if (playercounts == 0) {
-
-        var result = array;
-
-        localStorage.setItem('SocketResult', result);
-        
-    } else {
-
-        players.forEach(element => {
+    players.forEach(element => {
 
         playercount = playercount - 1;
 
@@ -162,12 +149,14 @@ function refresh_users() {
         const ped = GetPlayerPed(player);
         const [playerX, playerY, playerZ] = GetEntityCoords(ped);
         const coords = [Math.round(playerX), Math.round(playerY), Math.round(playerZ)];
-        const heading = Math.round(GetEntityHeading(ped));
+        const heading = 360 - Math.round(GetEntityHeading(ped));
 
         const vehicle = GetVehiclePedIsIn(ped, false);
         const modelhash = GetEntityModel(vehicle);
 
-        emitNet("GetInfo", player, player, name, coords, heading, modelhash, vehicle);
+        const callsign = Player(element).state.callsign;
+
+        emitNet("GetInfo", player, player, name, coords, heading, modelhash, vehicle, callsign);
 
         if (playercount == 0) {
 
@@ -179,18 +168,17 @@ function refresh_users() {
 
     });
 
+    if (playercounts == 0) {
+
+        var result = array;
+
+        localStorage.setItem('SocketResult', result);
+        
+    } else {
+
         var result = localStorage.getItem('result');
 
         localStorage.setItem('SocketResult', result);
 
     }
-
-}
-
-function sleep(milliseconds) {
-    const date = Date.now();
-    let currentDate = null;
-    do {
-        currentDate = Date.now();
-    } while (currentDate - date < milliseconds);
 }
