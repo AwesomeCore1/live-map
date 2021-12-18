@@ -121,6 +121,7 @@
                 var userid = json[i]['id'];
                 var username = json[i]['name'];
                 var vehicle = json[i]['vehicle'] || "Just walking";
+                var vehclass = json[i]['vehclass'];
                 var Xcoord = json[i]['coords'][0];
                 var Ycoord = json[i]['coords'][1];
                 var Zcoord = json[i]['coords'][2];
@@ -183,22 +184,23 @@
                 });
 
                 let usercoords = getPictureCoords(Xcoord, Ycoord);
+                const carclass = [0, 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 17, 18, 19, 20];
 
-                if (vehicle == "") {
+                if (vehclass == 16) {
                     LamMarker = new L.marker(
                         [usercoords[1], usercoords[0]], 
                         {
                             icon: planeIcon
                         }
                     );
-                } else if (vehicle == "CYCLONE") {
+                } else if (carclass.includes(vehclass)) {
                     LamMarker = new L.marker(
                         [usercoords[1], usercoords[0]], 
                         {
                             icon: carIcon
                         }
                     );
-                } else if (vehicle == "FROGGER") {
+                } else if (vehclass == 15) {
                     LamMarker = new L.marker(
                         [usercoords[1], usercoords[0]], 
                         {
