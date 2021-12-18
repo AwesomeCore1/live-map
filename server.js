@@ -5,6 +5,7 @@ const server = http.createServer(app);
 const { Server } = require("socket.io");
 const io = new Server(server);
 Delay = (ms) => new Promise(res => setTimeout(res, ms));
+import 'leaflet-rotatedmarker';
 
 var array = [];
 var result;

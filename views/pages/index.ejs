@@ -16,6 +16,67 @@
 </html>
 
 <script>
+    // https://github.com/bbecquet/Leaflet.RotatedMarker/blob/master/leaflet.rotatedMarker.js
+    (function() {
+    // save these original methods before they are overwritten
+    var proto_initIcon = L.Marker.prototype._initIcon;
+    var proto_setPos = L.Marker.prototype._setPos;
+
+    var oldIE = (L.DomUtil.TRANSFORM === 'msTransform');
+
+    L.Marker.addInitHook(function () {
+        var iconOptions = this.options.icon && this.options.icon.options;
+        var iconAnchor = iconOptions && this.options.icon.options.iconAnchor;
+        if (iconAnchor) {
+            iconAnchor = (iconAnchor[0] + 'px ' + iconAnchor[1] + 'px');
+        }
+        this.options.rotationOrigin = this.options.rotationOrigin || iconAnchor || 'center bottom' ;
+        this.options.rotationAngle = this.options.rotationAngle || 0;
+
+        // Ensure marker keeps rotated during dragging
+        this.on('drag', function(e) { e.target._applyRotation(); });
+    });
+
+    L.Marker.include({
+        _initIcon: function() {
+            proto_initIcon.call(this);
+        },
+
+        _setPos: function (pos) {
+            proto_setPos.call(this, pos);
+            this._applyRotation();
+        },
+
+        _applyRotation: function () {
+            if(this.options.rotationAngle) {
+                this._icon.style[L.DomUtil.TRANSFORM+'Origin'] = this.options.rotationOrigin;
+
+                if(oldIE) {
+                    // for IE 9, use the 2D rotation
+                    this._icon.style[L.DomUtil.TRANSFORM] = 'rotate(' + this.options.rotationAngle + 'deg)';
+                } else {
+                    // for modern browsers, prefer the 3D accelerated version
+                    this._icon.style[L.DomUtil.TRANSFORM] += ' rotateZ(' + this.options.rotationAngle + 'deg)';
+                }
+            }
+        },
+
+        setRotationAngle: function(angle) {
+            this.options.rotationAngle = angle;
+            this.update();
+            return this;
+        },
+
+        setRotationOrigin: function(origin) {
+            this.options.rotationOrigin = origin;
+            this.update();
+            return this;
+        }
+    });
+})();
+</script>
+
+<script>
 
     var bottomLeft = [0, 0];
     var topRight = [4096, 4096];
@@ -45,6 +106,7 @@
 <script src="/socket.io/socket.io.js"></script>
 
 <script>
+    
     var socket = io();
     var marker = new Array();
 
@@ -85,7 +147,7 @@
                     iconSize: [27, 32],
                     iconAnchor: [13.5, 16],
                     popupAnchor: [-13.5, 0],
-                    className: "icon-turn poop" + heading
+                    className: "icon-turn"
                 });
 
                 var planeIcon = L.icon({
@@ -93,15 +155,15 @@
                     iconSize: [32, 32],
                     iconAnchor: [16, 16],
                     popupAnchor: [-16, 0],
-                    className: "icon-turn icon-turn-" + heading
+                    className: "icon-turn"
                 });
 
                 var carIcon = L.icon({
                     iconUrl: 'https://ext-cdn.fivemods.net/img/LhKwFqpIcNvblYDA.png',
                     iconSize: [32, 32],
                     iconAnchor: [16, 16],
-                    popupAnchor: [-16, 0],
-                    className: "icon-turn icon-turn-" + heading
+                    popupAnchor: [0, -16],
+                    className: "icon-turn"
                 });
                 
                 var boatIcon = L.icon({
@@ -109,7 +171,7 @@
                     iconSize: [32, 32],
                     iconAnchor: [16, 16],
                     popupAnchor: [-16, 0],
-                    className: "icon-turn icon-turn-" + heading
+                    className: "icon-turn"
                 });
                 
                 var helicopterIcon = L.icon({
@@ -117,7 +179,7 @@
                     iconSize: [32, 32],
                     iconAnchor: [16, 16],
                     popupAnchor: [-16, 0],
-                    className: `icon-turn icon-helicopter`
+                    className: "icon-helicopter"
                 });
 
                 let usercoords = getPictureCoords(Xcoord, Ycoord);
@@ -129,11 +191,18 @@
                             icon: planeIcon
                         }
                     );
-                } else if (vehicle == "") {
+                } else if (vehicle == "CYCLONE") {
                     LamMarker = new L.marker(
                         [usercoords[1], usercoords[0]], 
                         {
                             icon: carIcon
+                        }
+                    );
+                } else if (vehicle == "FROGGER") {
+                    LamMarker = new L.marker(
+                        [usercoords[1], usercoords[0]], 
+                        {
+                            icon: helicopterIcon
                         }
                     );
                 } else {
@@ -146,7 +215,8 @@
                 }
                
                 LamMarker._myId = userid;
-                LamMarker.addTo(map); 
+                LamMarker.setRotationAngle(heading);
+                LamMarker.addTo(map);
                 if (popupid == userid) {
                     LamMarker.bindPopup(`
                     <div class="popup">
