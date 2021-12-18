@@ -174,13 +174,21 @@
                     popupAnchor: [-16, 0],
                     className: "icon-turn"
                 });
-                
-                var helicopterIcon = L.icon({
-                    iconUrl: 'https://ext-cdn.fivemods.net/img/NYGTQRc6gWiukIJt.png',
+
+                var bikeIcon = L.icon({
+                    iconUrl: 'https://ext-cdn.fivemods.net/img/ZaFC40vHgEkSAzN1.png',
                     iconSize: [32, 32],
                     iconAnchor: [16, 16],
                     popupAnchor: [-16, 0],
-                    className: "icon-helicopter"
+                    className: "icon-turn"
+                })
+                
+                var helicopterIcon = L.icon({
+                    iconUrl: 'https://docs.fivem.net/blips/radar_helicopter.png',
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16],
+                    popupAnchor: [-16, 0],
+                    className: "icon-turn"
                 });
 
                 let usercoords = getPictureCoords(Xcoord, Ycoord);
@@ -198,6 +206,20 @@
                         [usercoords[1], usercoords[0]], 
                         {
                             icon: carIcon
+                        }
+                    );
+                } else if (vehclass == 14) {
+                    LamMarker = new L.marker(
+                        [usercoords[1], usercoords[0]], 
+                        {
+                            icon: boatIcon
+                        }
+                    );
+                } else if (vehclass == 8) {
+                    LamMarker = new L.marker(
+                        [usercoords[1], usercoords[0]], 
+                        {
+                            icon: bikeIcon
                         }
                     );
                 } else if (vehclass == 15) {
