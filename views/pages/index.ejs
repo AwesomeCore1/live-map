@@ -43,7 +43,7 @@
 
 <script src="/socket.io/socket.io.js"></script>
 
-<script>
+<script>    
     var socket = io();
     var marker = new Array();
 
@@ -62,21 +62,63 @@
                 var Ycoord = json[i]['coords'][1];
                 var Zcoord = json[i]['coords'][2];
                 var heading = json[i]['heading'];
+                var speedMS = json[i]['speedMS'] || 0;
                 var headingText;
+                var LamMarker;
+                var speedKMH = speedMS * 3.6;
+                var speedMH = speedMS * 2.236936;
                 
                 if (heading > 45 && heading <= 135) {
-                    headingText = 'West';
+                    headingText = 'East';
                 } else if (heading > 135 && heading <= 225) {
                     headingText = 'South';
                 } else if (heading > 225 && heading <= 315) {
-                    headingText = 'East';
+                    headingText = 'West';
                 } else {
                     headingText = 'North';
                 }
+                
+                var personIcon = L.icon({
+                    iconUrl: 'https://ext-cdn.fivemods.net/img/xDBF2N1REK6f7GWr.png',
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 21.2],
+                    popupAnchor: [0, -21.2]
+                });
 
-                if (vehicle != 0) {
-                    // do stuff
-                }
+                var planeIcon = L.icon({
+                    iconUrl: 'https://ext-cdn.fivemods.net/img/RaVnXuM0j4Kkbzvl.png',
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16],
+                    popupAnchor: [0, -16]
+                });
+
+                var carIcon = L.icon({
+                    iconUrl: 'https://ext-cdn.fivemods.net/img/LhKwFqpIcNvblYDA.png',
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16],
+                    popupAnchor: [0, -16]
+                });
+                
+                var boatIcon = L.icon({
+                    iconUrl: 'https://ext-cdn.fivemods.net/img/31j75MctQRrL6d9I.png',
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16],
+                    popupAnchor: [0, -16]
+                });
+
+                var bikeIcon = L.icon({
+                    iconUrl: 'https://ext-cdn.fivemods.net/img/ZaFC40vHgEkSAzN1.png',
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16],
+                    popupAnchor: [-16, 0]
+                })
+                
+                var helicopterIcon = L.icon({
+                    iconUrl: 'https://docs.fivem.net/blips/radar_helicopter.png',
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16],
+                    popupAnchor: [0, -16]
+                });
 
                 let usercoords = getPictureCoords(Xcoord, Ycoord);
 
@@ -94,6 +136,10 @@
                         <div class="popup-info" title="Vehicle">
                             <img src="https://ext-cdn.fivemods.net/img/YBOlTpnHF3qvwi1C.svg" alt="Vehicle">
                             <p>${vehicle}</p>
+                        </div>
+                        <div class="popup-info" title="Speed">
+                            <img src="https://ext-cdn.fivemods.net/img/Xa0ed9EpYWBZfLQc.svg" alt="Speedometer">
+                            <p>${speedKMH} KPH / ${speedMH} MPH</p>
                         </div>
                         <div class="popup-info" title="Heading">
                             <img src="https://ext-cdn.fivemods.net/img/e01jSfDIA5Zm3XRK.svg" alt="Heading">
@@ -117,6 +163,10 @@
                         <div class="popup-info" title="Vehicle">
                             <img src="https://ext-cdn.fivemods.net/img/YBOlTpnHF3qvwi1C.svg" alt="Vehicle">
                             <p>${vehicle}</p>
+                        </div>
+                        <div class="popup-info" title="Speed">
+                            <img src="https://ext-cdn.fivemods.net/img/Xa0ed9EpYWBZfLQc.svg" alt="Speedometer">
+                            <p>${speedKMH} KPH / ${speedMH} MPH</p>
                         </div>
                         <div class="popup-info" title="Heading">
                             <img src="https://ext-cdn.fivemods.net/img/e01jSfDIA5Zm3XRK.svg" alt="Heading">

@@ -3,6 +3,10 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
     integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
     crossorigin="" />
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdn.socket.io/4.4.0/socket.io.msgpack.min.js"></script>
+
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
     integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
     crossorigin=""></script>
@@ -68,12 +72,6 @@
     }
 
     .popup {
-        /* position: fixed;
-        top: 10%;
-        right: 10%;
-        z-index: 10000;
-        background: white;
-        padding: 1rem; */
         color: #1F2937;
         font-family: 'Montserrat', sans-serif;
     }
@@ -108,4 +106,21 @@
     .popup-info p {
         margin: 0 !important;
     }
+
+    @media screen and (max-width: 500px) {
+        footer {
+            max-width: calc(100% - 2rem);
+        }
+    }
+
+    .leaflet-popup {
+        opacity: 1 !important;
+        /* box-shadow: none !important;
+        transition: box-shadow .2s !important; */
+    }
+/* 
+    .leaflet-zoom-animated {
+        transition: transform 0.25s cubic-bezier(0,0,0.25,1) !important;
+    } */
+
 </style>
