@@ -16,6 +16,67 @@
 </html>
 
 <script>
+    // https://github.com/bbecquet/Leaflet.RotatedMarker/blob/master/leaflet.rotatedMarker.js
+    (function() {
+    // save these original methods before they are overwritten
+    var proto_initIcon = L.Marker.prototype._initIcon;
+    var proto_setPos = L.Marker.prototype._setPos;
+
+    var oldIE = (L.DomUtil.TRANSFORM === 'msTransform');
+
+    L.Marker.addInitHook(function () {
+        var iconOptions = this.options.icon && this.options.icon.options;
+        var iconAnchor = iconOptions && this.options.icon.options.iconAnchor;
+        if (iconAnchor) {
+            iconAnchor = (iconAnchor[0] + 'px ' + iconAnchor[1] + 'px');
+        }
+        this.options.rotationOrigin = this.options.rotationOrigin || iconAnchor || 'center bottom' ;
+        this.options.rotationAngle = this.options.rotationAngle || 0;
+
+        // Ensure marker keeps rotated during dragging
+        this.on('drag', function(e) { e.target._applyRotation(); });
+    });
+
+    L.Marker.include({
+        _initIcon: function() {
+            proto_initIcon.call(this);
+        },
+
+        _setPos: function (pos) {
+            proto_setPos.call(this, pos);
+            this._applyRotation();
+        },
+
+        _applyRotation: function () {
+            if(this.options.rotationAngle) {
+                this._icon.style[L.DomUtil.TRANSFORM+'Origin'] = this.options.rotationOrigin;
+
+                if(oldIE) {
+                    // for IE 9, use the 2D rotation
+                    this._icon.style[L.DomUtil.TRANSFORM] = 'rotate(' + this.options.rotationAngle + 'deg)';
+                } else {
+                    // for modern browsers, prefer the 3D accelerated version
+                    this._icon.style[L.DomUtil.TRANSFORM] += ' rotateZ(' + this.options.rotationAngle + 'deg)';
+                }
+            }
+        },
+
+        setRotationAngle: function(angle) {
+            this.options.rotationAngle = angle;
+            this.update();
+            return this;
+        },
+
+        setRotationOrigin: function(origin) {
+            this.options.rotationOrigin = origin;
+            this.update();
+            return this;
+        }
+    });
+})();
+</script>
+
+<script>
 
     var bottomLeft = [0, 0];
     var topRight = [4096, 4096];
@@ -27,7 +88,8 @@
         crs: L.CRS.Simple,
         minZoom: -1.7,
         maxBounds: bounds,
-        maxBoundsViscosity: 1.0
+        maxBoundsViscosity: 1.0,
+        zoomControl: false
     });
 
     map.on('popupopen', function (e) {
@@ -44,6 +106,7 @@
 <script src="/socket.io/socket.io.js"></script>
 
 <script>
+    
     var socket = io();
     var marker = new Array();
 
@@ -58,11 +121,13 @@
                 var userid = json[i]['id'];
                 var username = json[i]['name'];
                 var vehicle = json[i]['vehicle'] || "Just walking";
+                var vehclass = json[i]['vehclass'];
                 var Xcoord = json[i]['coords'][0];
                 var Ycoord = json[i]['coords'][1];
                 var Zcoord = json[i]['coords'][2];
                 var heading = json[i]['heading'];
                 var headingText;
+                var LamMarker;
                 
                 if (heading > 45 && heading <= 135) {
                     headingText = 'West';
@@ -73,15 +138,104 @@
                 } else {
                     headingText = 'North';
                 }
+                
+                var personIcon = L.icon({
+                    iconUrl: 'https://ext-cdn.fivemods.net/img/xDBF2N1REK6f7GWr.png',
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 21.2],
+                    popupAnchor: [0, -21.2],
+                    className: "icon-turn"
+                });
 
-                if (vehicle != 0) {
-                    // do stuff
-                }
+                var planeIcon = L.icon({
+                    iconUrl: 'https://ext-cdn.fivemods.net/img/RaVnXuM0j4Kkbzvl.png',
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16],
+                    popupAnchor: [0, -16],
+                    className: "icon-turn"
+                });
+
+                var carIcon = L.icon({
+                    iconUrl: 'https://ext-cdn.fivemods.net/img/LhKwFqpIcNvblYDA.png',
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16],
+                    popupAnchor: [0, -16],
+                    className: "icon-turn"
+                });
+                
+                var boatIcon = L.icon({
+                    iconUrl: 'https://ext-cdn.fivemods.net/img/31j75MctQRrL6d9I.png',
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16],
+                    popupAnchor: [0, -16],
+                    className: "icon-turn"
+                });
+
+                var bikeIcon = L.icon({
+                    iconUrl: 'https://ext-cdn.fivemods.net/img/ZaFC40vHgEkSAzN1.png',
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16],
+                    popupAnchor: [-16, 0],
+                    className: "icon-turn"
+                })
+                
+                var helicopterIcon = L.icon({
+                    iconUrl: 'https://docs.fivem.net/blips/radar_helicopter.png',
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16],
+                    popupAnchor: [0, -16],
+                    className: "icon-helicopter"
+                });
 
                 let usercoords = getPictureCoords(Xcoord, Ycoord);
+                const carclass = [0, 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 17, 18, 19, 20];
 
-                var LamMarker = new L.marker([usercoords[1], usercoords[0]]);
+                if (vehclass == 16) {
+                    LamMarker = new L.marker(
+                        [usercoords[1], usercoords[0]], 
+                        {
+                            icon: planeIcon
+                        }
+                    );
+                } else if (carclass.includes(vehclass)) {
+                    LamMarker = new L.marker(
+                        [usercoords[1], usercoords[0]], 
+                        {
+                            icon: carIcon
+                        }
+                    );
+                } else if (vehclass == 14) {
+                    LamMarker = new L.marker(
+                        [usercoords[1], usercoords[0]], 
+                        {
+                            icon: boatIcon
+                        }
+                    );
+                } else if (vehclass == 8) {
+                    LamMarker = new L.marker(
+                        [usercoords[1], usercoords[0]], 
+                        {
+                            icon: bikeIcon
+                        }
+                    );
+                } else if (vehclass == 15) {
+                    LamMarker = new L.marker(
+                        [usercoords[1], usercoords[0]], 
+                        {
+                            icon: helicopterIcon
+                        }
+                    );
+                } else {
+                    LamMarker = new L.marker(
+                        [usercoords[1], usercoords[0]], 
+                        {
+                            icon: personIcon
+                        }
+                    );
+                }
+               
                 LamMarker._myId = userid;
+                LamMarker.setRotationAngle(heading);
                 LamMarker.addTo(map);
                 if (popupid == userid) {
                     LamMarker.bindPopup(`
@@ -143,6 +297,9 @@
 
         markerAdd();
 
+        $('.leaflet-popup-close-button').click(function() {
+            popupid = 0;
+        });
 
         function getPictureCoords(x, y) {
             const ZeroX = 1876;
@@ -155,6 +312,11 @@
             return [Math.floor(trueX), Math.floor(trueY)];
         }
 
+        $('.leaflet-control-attribution').hide()
+
     });
+
+
+
 
 </script>
